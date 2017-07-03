@@ -1,12 +1,15 @@
 {TextEditor} = require 'atom'
 
+opn = require 'opn'
+
 AbstractProvider = require './abstract-provider'
+config = require "../config.coffee"
 
 module.exports =
 
 class FunctionProvider extends AbstractProvider
-    hoverEventSelectors: '.syntax--function-call'
-    clickEventSelectors: '.syntax--function-call'
+    hoverEventSelectors: '.syntax--function-call, .syntax--function'
+    clickEventSelectors: '.syntax--function-call, .syntax--function'
     gotoRegex: /(?:(?:[a-zA-Z0-9_]*)\s*(?:\(.*\))?\s*(?:->|::)\s*)+([a-zA-Z0-9_]*)/
 
     ###*
@@ -34,12 +37,16 @@ class FunctionProvider extends AbstractProvider
         if not value
             return
 
-        atom.workspace.open(value.declaringStructure.filename, {
-            initialLine    : (value.startLine - 1),
-            searchAllPanes : true
-        })
+        if value.isInternal
+            opn(config.config.php_documentation_base_url.functions+term)
 
-        @manager.addBackTrack(editor.getPath(), bufferPosition)
+        else
+            atom.workspace.open(value.declaringStructure.filename, {
+                initialLine    : (value.startLine - 1),
+                searchAllPanes : true
+            })
+
+            @manager.addBackTrack(editor.getPath(), bufferPosition)
 
     ###*
      * Gets the regex used when looking for a word within the editor
